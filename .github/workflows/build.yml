@@ -22,17 +22,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel setuptools
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         pip install -r requirements.txt
         pip install pyinstaller
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-
-    - name: Verify installs
-      run: |
         python -m pip list
         
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --windowed --onedir --name main --add-data "models/best.onnx;models" --collect-all numpy --collect-all cv2 main.py
+        pyinstaller --onedir --name main --add-data "models/best.onnx;models" --collect-all numpy --collect-all opencv-python main.py
 
     - name: Archive executable
       uses: actions/upload-artifact@v4
