@@ -2,3 +2,6 @@
 *.pt
 data
 *.zip
+dist
+build 
+*.spec

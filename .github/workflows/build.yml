@@ -27,10 +27,10 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --windowed --onefile --name main --add-data "models/best.onnx;models" --hidden-import numpy --hidden-import cv2 main.py
+        pyinstaller --windowed --onedir --name main --add-data "models/best.onnx;models" --hidden-import numpy --hidden-import cv2 main.py
 
     - name: Archive executable
       uses: actions/upload-artifact@v4
       with:
-        name: windows-exe
-        path: dist/main.exe
+        name: dist-folder
+        path: dist
