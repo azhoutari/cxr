@@ -21,9 +21,7 @@ int main(int argc, char *argv[]) {
     window.show();
 
     FrameSender sender(screen, "http://127.0.0.1:8000/infer/", &window);
-    sender.captureAndSendLoop(5); // 5 fps
-
-
+    sender.captureAndSendLoop(1); // 5 fps
 
     return app.exec(); // Qt event loop keeps app alive
 }

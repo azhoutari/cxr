@@ -1,7 +1,7 @@
 #include "detections.h"
 
 // Parse JSON
-std::vector<Detection> parseDetections(const std::string& jsonStr) {
+std::vector<Detection> parseDetections(const std::string& jsonStr, qreal devicePixelRatio) {
     std::vector<Detection> detections;
     QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(jsonStr).toUtf8());
     if (!doc.isObject()) return detections;
@@ -12,10 +12,10 @@ std::vector<Detection> parseDetections(const std::string& jsonStr) {
     for (auto item : arr) {
         QJsonObject det = item.toObject();
         Detection d;
-        d.x1 = det["x1"].toInt();
-        d.y1 = det["y1"].toInt();
-        d.x2 = det["x2"].toInt();
-        d.y2 = det["y2"].toInt();
+        d.x1 = det["x1"].toInt() / devicePixelRatio;
+        d.y1 = det["y1"].toInt() / devicePixelRatio;
+        d.x2 = det["x2"].toInt() / devicePixelRatio;
+        d.y2 = det["y2"].toInt() / devicePixelRatio;
         d.label = det["label"].toString().toStdString();
         d.confidence = det["confidence"].toDouble();
         detections.push_back(d);

@@ -1,6 +1,8 @@
 #pragma once
 #include <QWidget>
 #include <QPoint>
+#include <QRect>
+#include <QShortcut> // <-- New Include
 #include <detections.h>
 
 class OverlayWindow : public QWidget {
@@ -12,13 +14,15 @@ public:
 public slots:
     void setDetections(const std::vector<Detection>& detections); // New function to update detections
 
+private slots:
+    void toggleVisibility(); // Slot to toggle visibility
+
 protected:
     void paintEvent(QPaintEvent* event) override; // Override paintEvent
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
-    QPoint dragPosition;
     std::vector<Detection> detections_;
+    QShortcut* visibilityShortcut; // Shortcut to toggle visibility
+
 
 };

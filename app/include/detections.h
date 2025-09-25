@@ -17,7 +17,7 @@ struct Detection {
 };
 
 // Parse server JSON response
-std::vector<Detection> parseDetections(const std::string& jsonStr);
+std::vector<Detection> parseDetections(const std::string& jsonStr, qreal devicePixelRatio = 1.0);
 
 // Draw detections on a frame
 void drawDetections(cv::Mat& frame, const std::vector<Detection>& detections);

@@ -1,10 +1,10 @@
 from ultralytics import YOLO
 
-from typing import Union
-
 from fastapi import FastAPI, File, UploadFile
 import numpy as np
 import cv2
+
+import random
 
 model = YOLO('../models/best.onnx', verbose=False)
 
@@ -39,15 +39,9 @@ async def infer_frame(frame: UploadFile = File(...)):
         return {"detections": detections}
     
 
-    # For testing purposes
-    detections.append({
-        'x1': 300,
-        'y1': 300,
-        'x2': 400,
-        'y2': 400,
-        'label': 'cat',
-        'confidence': 0.9
-    })
+    x1 = random.randint(50, 150)
+    y1 = random.randint(50, 150)
+
     
     for b in result[0].boxes:
         x1, y1, x2, y2 = map(int, b.xyxy[0].tolist())

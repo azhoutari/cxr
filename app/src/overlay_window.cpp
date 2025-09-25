@@ -6,6 +6,7 @@
 #include <QApplication> 
 #include <QPainter>
 #include <QDebug>
+#include <QKeySequence> // Required for QShortcut key definition
 
 
 OverlayWindow::OverlayWindow(QWidget* parent)
@@ -24,31 +25,12 @@ OverlayWindow::OverlayWindow(QWidget* parent)
         setGeometry(screen->geometry());
     }
 
-       // Toolbar container with solid background
-    QWidget* container = new QWidget(this);
-    container->setStyleSheet("background-color: rgba(50,50,50,0.9); border-radius: 5px;");
+    visibilityShortcut = new QShortcut(QKeySequence(Qt::Key_H), this);
+    visibilityShortcut->setContext(Qt::ApplicationShortcut); // <-- CRITICAL FIX
 
-    QVBoxLayout* layout = new QVBoxLayout(container);
-    layout->setContentsMargins(5,5,5,5);
-    layout->setSpacing(10);
+    connect(visibilityShortcut, &QShortcut::activated, this, &OverlayWindow::toggleVisibility);
 
-    // Example label at top
-    QLabel* title = new QLabel("CXR");
-    title->setStyleSheet("color: white; font-weight: bold; font-size: 16px;");
-    layout->addWidget(title);
 
-    // Exit button (terminates the whole application)
-    QPushButton* exitBtn = new QPushButton("X");
-    exitBtn->setStyleSheet("background-color: red; color: white; border-radius: 5px;");
-    connect(exitBtn, &QPushButton::clicked, qApp, &QApplication::quit); // quit entire app
-    layout->addWidget(exitBtn);
-
-    layout->addStretch(); // push buttons to top
-
-    container->setLayout(layout);
-    container->setFixedWidth(50); // width of toolbar
-    container->setFixedHeight(400); // height of toolbar
-    setFixedSize(container->size());
 }
 
 void OverlayWindow::setDetections(const std::vector<Detection>& detections) {
@@ -58,42 +40,37 @@ void OverlayWindow::setDetections(const std::vector<Detection>& detections) {
 }
 
 void OverlayWindow::paintEvent(QPaintEvent* event) {
+    Q_UNUSED(event);
+
     QPainter painter(this);
-    
-    // VERY IMPORTANT: Fill the background with a transparent color
-    painter.fillRect(event->rect(), QColor(0, 0, 0, 255)); // 1% alpha
-    
-    // Now draw your detections on this transparent canvas
-    if (!detections_.empty()) {
-        QColor rectColor(0, 255, 0, 150); 
-        QPen pen(Qt::green, 2, Qt::SolidLine, Qt::RoundCap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    for (auto &detection : detections_) {
+        QRect box(detection.x1, detection.y1, detection.x2 - detection.x1, detection.y2 - detection.y1);
         
+        QPen pen(Qt::green, 2);
         painter.setPen(pen);
-        painter.setBrush(QBrush(rectColor));
         
-        for (const auto& d : detections_) {
-            QRect rect(d.x1, d.y1, d.x2 - d.x1, d.y2 - d.y1);
-            painter.drawRect(rect);
-            
-            QString label = QString::fromStdString(d.label) + QString(" %1%").arg(d.confidence * 100);
-            painter.setPen(Qt::white);
-            painter.drawText(d.x1, d.y1 - 5, label);
-        }
+        // Semi-transparent fill
+        painter.setBrush(QBrush(QColor(0, 255, 0, 50))); 
+        
+        painter.drawRect(box);
+        
+        QString label = QString("%1: %2%").arg(QString::fromStdString(detection.label)).arg(int(detection.confidence * 100));
+        painter.drawText(box.topLeft() + QPoint(5, 15), label);
     }
 }
 
-void OverlayWindow::mousePressEvent(QMouseEvent* event)
+void OverlayWindow::toggleVisibility()
 {
-    if (event->button() == Qt::LeftButton) {
-        dragPosition = event->globalPos() - frameGeometry().topLeft();
-        event->accept();
-    }
-}
-
-void OverlayWindow::mouseMoveEvent(QMouseEvent* event)
-{
-    if (event->buttons() & Qt::LeftButton) {
-        move(event->globalPos() - dragPosition);
-        event->accept();
+    if (this->isVisible()) {
+        this->hide();
+        qDebug() << "Overlay Hidden (Shortcut triggered)";
+    } else {
+        // When unhiding, ensure it is raised back to the top
+        this->show();
+        this->raise(); 
+        this->activateWindow();
+        qDebug() << "Overlay Shown (Shortcut triggered)";
     }
 }

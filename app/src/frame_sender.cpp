@@ -53,7 +53,7 @@ std::string FrameSender::sendFrame(const cv::Mat& frame) {
 
     curl_easy_setopt(curl_, CURLOPT_URL, url_.c_str());
     curl_easy_setopt(curl_, CURLOPT_MIMEPOST, form);
-    curl_easy_setopt(curl_, CURLOPT_TIMEOUT_MS, 5000L); // handle server delay
+    curl_easy_setopt(curl_, CURLOPT_TIMEOUT_MS, 10000); // handle server delay
 
     curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl_, CURLOPT_WRITEDATA, &response_string);
@@ -87,8 +87,12 @@ void FrameSender::captureAndSendLoop(int fps) {
 
             std::string jsonStr = sendFrame(frame); // implement your curl request
 
+
+            qreal devicePixelRatio = screen_->devicePixelRatio();
+
             // Parse detections
-            auto detections = parseDetections(jsonStr);
+            auto detections = parseDetections(jsonStr, devicePixelRatio);
+
 
             if (overlayWindow_) {
                 // Use QMetaObject::invokeMethod to ensure the call is thread-safe
@@ -102,6 +106,7 @@ void FrameSender::captureAndSendLoop(int fps) {
                           << " Box: [" << det.x1 << ", " << det.y1 
                           << ", " << det.x2 << ", " << det.y2 << "]" 
                           << std::endl;
+
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(1000 / fps));
